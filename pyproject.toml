@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "dora-streamlit"
+description = "A streamlit app for DoRA"
+version = "0.0.1"
+authors = ["Rohan Sobha <r.r.sobha@student.tudelft.nl>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "^1.29.0"
+extra-streamlit-components = "^0.1.60"
+streamlit-cookies-manager = "^0.2.0"
