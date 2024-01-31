@@ -1,8 +1,13 @@
-from typing import cast
+from typing import TypedDict, cast
 from streamlit_cookies_manager import CookieManager
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit_mods.endpoints import Endpoints
+
+class FileState(TypedDict, total=True):
+    name: str
+    file: UploadedFile
+    is_uploaded: bool
 
 
 class FileHelper:
@@ -33,13 +38,13 @@ class FileHelper:
         st.session_state.filenames = value
 
     @property
-    def file_states(self) -> list[dict[str, bool | UploadedFile | str]]:
+    def file_states(self) -> list[FileState]:
         if "file_states" in st.session_state:
             return st.session_state.file_states
         return []
 
     @file_states.setter
-    def file_states(self, value: list[dict[str, bool | UploadedFile | str]]) -> None:
+    def file_states(self, value: list[FileState]) -> None:
         st.session_state.file_states = value
 
     def has_file_been_uploaded(self, filename: str) -> bool:
@@ -64,7 +69,7 @@ class FileHelper:
             unique_file_names.add(file.name)
             unique_files.append(file)
         self.filenames = unique_file_names
-        self.file_states = [
+        self.file_states: list[FileState] = [
             {"name": file.name, "file": file, "is_uploaded": self.has_file_been_uploaded(file.name)}
             for file in unique_files
         ]
