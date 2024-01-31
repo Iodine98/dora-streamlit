@@ -1,10 +1,23 @@
+import base64
 from streamlit_mods.helpers.session_state_helper import SessionStateHelper
 from streamlit_mods.endpoints import Endpoints, Result
-from typing import Any
+from streamlit_mods.helpers.file_helper import FileState
+from typing import Any, cast
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 from timeit import default_timer
 import time
+
+def format_time_str(time_elapsed: float) -> str:
+    if time_elapsed == 0:
+        return ""
+    elif time_elapsed > 100:
+        return f"{round((time_elapsed)/60)} minuten"
+    else:
+        return f"{round(time_elapsed)} seconden"
+
+
 
 
 class MainScreen:
@@ -14,6 +27,64 @@ class MainScreen:
         self.message_helper = session_state_helper.message_helper
         self.init_message_content = "Hallo, ik ben DoRA. Wat kan ik voor je doen?"
         self.init()
+
+    def display_ai_message(self, content: str, citations: list[dict[str, str]], time_elapsed: float, placeholder: DeltaGenerator | None = None) -> None:
+        if placeholder:
+            placeholder.markdown(content)
+        else:
+            st.markdown(content)
+        if citations:
+            self.display_citations(citations)
+        if time_elapsed >= 0:
+            time_str = format_time_str(time_elapsed)
+            st.write(f":orange[Responstijd: {time_str}]")
+
+    def get_file_state_by_name(self, filename: str) -> FileState:
+        [file_state] = [file_state for file_state in self.file_helper.file_states if str(file_state["name"]).replace(" ", "_") == filename]
+        if file_state is None:
+            st.error(f"File state was not found for {filename}")
+            raise ValueError(f"File state was not found for {filename}")
+        return file_state
+
+    def get_file_url(self, current_file: UploadedFile, page_number: int) -> str:
+        file_bytes = current_file.getvalue()
+        base64_bytes = base64.b64encode(file_bytes)
+        base64_string = base64_bytes.decode()
+        if current_file.type == 'application/pdf':
+            return f"data:application/pdf;base64,{base64_string}#page={page_number}"
+        return f"data:application/octet-stream;base64,{base64_string}"
+    
+    def get_file_state_html(self, file_state: FileState, page_number: int) -> str:
+        current_file = file_state["file"]
+        file_bytes = current_file.getvalue()
+        base64_bytes = base64.b64encode(file_bytes)
+        base64_string = base64_bytes.decode()
+        if current_file.type == 'application/pdf':
+            file_url = f"data:application/pdf;base64,{base64_string}#page={page_number}"
+            return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
+
+        else:
+            file_url = f"data:application/octet-stream;base64,{base64_string}"
+            return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
+        
+
+
+
+    def display_citations(self, citations: list[dict[str, str]]) -> None:
+        source_name_html_map = {}
+        for i, citation in enumerate(citations):
+            with st.expander(f"Bron {i+1}"):
+                if citation["source"] not in source_name_html_map:
+                    current_file_state = self.get_file_state_by_name(citation["source"])
+                    html_output = self.get_file_state_html(current_file_state, int(citation["page"]))
+                    source_name_html_map[citation["source"]] = html_output
+                file_state_html = source_name_html_map[citation["source"]]
+                st.markdown(f'Bestand: {file_state_html}', unsafe_allow_html=True)
+                st.markdown(f'Rangorde: {citation["ranking"]}')
+                if "score" in citation and int(citation["score"]) >= 0.0:
+                    st.markdown(f'Score: {round(float(citation["score"]), 2)}')
+                st.markdown(f'Pagina: {citation["page"]}')
+                st.markdown(f'Citaat: "{citation["proof"]}"')
 
     def init(self):
         if not self.session_state_helper.authenticated:
@@ -30,28 +101,18 @@ class MainScreen:
                     st.markdown(message["content"])
             elif message["role"] == "ai":
                 with st.chat_message("ai"):
-                    st.markdown(message["content"])
-                    if citations := message["citations"]:
-                        for i, citation in enumerate(citations):
-                            with st.expander(f"Bron {i+1}"):
-                                st.markdown(f'Bestand: {citation["source"]}')
-                                st.markdown(f'Pagina: {citation["page"]}')
-                                st.markdown(f'Citaat: "{citation["proof"]}"')
-                    time_elapsed = message["time"]
-                    if time_elapsed == 0:
-                        time_str = ""
-                    elif time_elapsed > 100:
-                        time_str = f"{round((time_elapsed)/60)} minuten"
-                    else:
-                        time_str = f"{round(time_elapsed)} seconden"
-                    st.write(f":orange[Responstijd: {time_str}]" if time_str else "")
+                    self.display_ai_message(
+                        content=message["content"],
+                        citations=message["citations"],
+                        time_elapsed=message["time"]
+                    )
 
     def equals_init_message(self, message: dict[str, Any]) -> bool:
         return message["content"] == self.init_message_content
 
     def add_initial_message(self):
         if not self.session_state_helper.initialized:
-            self.message_helper.add_bot_message(self.init_message_content, [], [], 0)
+            self.message_helper.add_bot_message(self.init_message_content, [], [], -1)
             self.session_state_helper.initialized = True
 
     def init_chat_input(self):
@@ -86,25 +147,8 @@ class MainScreen:
                 time.sleep(0.1)
             return placeholder, full_answer
 
-        def get_citations() -> None:
-            for i, citation in enumerate(citations):
-                with st.expander(f"Bron {i+1}"):
-                    st.markdown(f'Bestand: {citation["source"]}')
-                    st.markdown(f'Rangorde: {citation["ranking"]}')
-                    if "score" in citation:
-                        st.markdown(f'Score: {citation["score"]}')
-                    st.markdown(f'Pagina: {citation["page"]}')
-                    st.markdown(f'Citaat: "{citation["proof"]}"')
-
-        def show_result() -> None:
-            placeholder.markdown(full_answer)
-            if citations:
-                get_citations()
-            time_str = f"{round((time_elapsed)/60)} minutes" if time_elapsed > 100 else f"{round(time_elapsed)} seconds"
-            st.write(f":orange[Time to retrieve response: {time_str}]")
-
         placeholder, full_answer = build_placeholder()
         end = default_timer()
         time_elapsed = end - start_time
         self.message_helper.add_bot_message(answer, citations, source_documents, time_elapsed)
-        show_result()
+        self.display_ai_message(full_answer, citations, time_elapsed, placeholder)
