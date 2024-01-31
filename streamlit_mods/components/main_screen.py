@@ -91,6 +91,8 @@ class MainScreen:
                 with st.expander(f"Bron {i+1}"):
                     st.markdown(f'Bestand: {citation["source"]}')
                     st.markdown(f'Rangorde: {citation["ranking"]}')
+                    if "score" in citation:
+                        st.markdown(f'Score: {citation["score"]}')
                     st.markdown(f'Pagina: {citation["page"]}')
                     st.markdown(f'Citaat: "{citation["proof"]}"')
 
