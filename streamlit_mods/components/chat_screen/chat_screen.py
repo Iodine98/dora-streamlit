@@ -17,16 +17,33 @@ def format_time_str(time_elapsed: float) -> str:
     else:
         return f"{round(time_elapsed)} seconden"
 
+def get_file_state_html(file_state: FileState, page_number: int) -> str:
+        current_file = file_state["file"]
+        file_bytes = current_file.getvalue()
+        base64_bytes = base64.b64encode(file_bytes)
+        base64_string = base64_bytes.decode()
+        if current_file.type == 'application/pdf':
+            file_url = f"data:application/pdf;base64,{base64_string}#page={page_number}"
+            return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
+
+        else:
+            file_url = f"data:application/octet-stream;base64,{base64_string}"
+            return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
 
 
-
-class MainScreen:
+class ChatScreen:
     def __init__(self, session_state_helper: SessionStateHelper) -> None:
+        st.header("Chat met DoRA 🤖")
         self.session_state_helper = session_state_helper
         self.file_helper = session_state_helper.file_helper
         self.message_helper = session_state_helper.message_helper
         self.init_message_content = "Hallo, ik ben DoRA. Wat kan ik voor je doen?"
-        self.init()
+        if not self.session_state_helper.authenticated:
+            st.stop()
+        self.add_initial_message()
+        self.init_chat_input()
+        self.display_messages()
+        self.send_prompt_on_last_message()
 
     def display_ai_message(self, content: str, citations: list[dict[str, str]], time_elapsed: float, placeholder: DeltaGenerator | None = None) -> None:
         if placeholder:
@@ -46,53 +63,28 @@ class MainScreen:
             raise ValueError(f"File state was not found for {filename}")
         return file_state
 
-    def get_file_url(self, current_file: UploadedFile, page_number: int) -> str:
-        file_bytes = current_file.getvalue()
-        base64_bytes = base64.b64encode(file_bytes)
-        base64_string = base64_bytes.decode()
-        if current_file.type == 'application/pdf':
-            return f"data:application/pdf;base64,{base64_string}#page={page_number}"
-        return f"data:application/octet-stream;base64,{base64_string}"
-    
-    def get_file_state_html(self, file_state: FileState, page_number: int) -> str:
-        current_file = file_state["file"]
-        file_bytes = current_file.getvalue()
-        base64_bytes = base64.b64encode(file_bytes)
-        base64_string = base64_bytes.decode()
-        if current_file.type == 'application/pdf':
-            file_url = f"data:application/pdf;base64,{base64_string}#page={page_number}"
-            return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
-
-        else:
-            file_url = f"data:application/octet-stream;base64,{base64_string}"
-            return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
-        
-
-
 
     def display_citations(self, citations: list[dict[str, str]]) -> None:
         source_name_html_map = {}
         for i, citation in enumerate(citations):
             with st.expander(f"Bron {i+1}"):
-                if citation["source"] not in source_name_html_map:
-                    current_file_state = self.get_file_state_by_name(citation["source"])
-                    html_output = self.get_file_state_html(current_file_state, int(citation["page"]))
-                    source_name_html_map[citation["source"]] = html_output
-                file_state_html = source_name_html_map[citation["source"]]
-                st.markdown(f'Bestand: {file_state_html}', unsafe_allow_html=True)
+                current_file_state = self.get_file_state_by_name(citation["source"])
+                col1, col2 = st.columns([1,7], gap="small")
+                col1.markdown("Bestand:")
+                col2.download_button(
+                    label=f"{current_file_state['name']}",
+                    data=current_file_state["file"],
+                    file_name=current_file_state["name"],
+                    mime="application/octet-stream",
+                    key=f"{citation['source'], i}"
+                )
+                # st.markdown(f'Bestand: {file_state_html}', unsafe_allow_html=True)
                 st.markdown(f'Rangorde: {citation["ranking"]}')
                 if "score" in citation and int(citation["score"]) >= 0.0:
                     st.markdown(f'Score: {round(float(citation["score"]), 2)}')
                 st.markdown(f'Pagina: {citation["page"]}')
-                st.markdown(f'Citaat: "{citation["proof"]}"')
-
-    def init(self):
-        if not self.session_state_helper.authenticated:
-            st.stop()
-        self.add_initial_message()
-        self.init_chat_input()
-        self.display_messages()
-        self.send_prompt_on_last_message()
+                st.markdown(f'''Citaat: "*{citation["proof"]}*"''')
+        
 
     def display_messages(self):
         for message in self.message_helper.messages:
