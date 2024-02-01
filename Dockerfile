@@ -43,4 +43,4 @@ COPY . /app
 EXPOSE 8501
 
 # Execute Streamlit server on starting container
-ENTRYPOINT ["streamlit", "run", "st_app.py"]
+ENTRYPOINT ["streamlit", "run", "Welkom.py"]
