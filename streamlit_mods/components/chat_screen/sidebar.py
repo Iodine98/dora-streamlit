@@ -1,4 +1,4 @@
-from ..helpers.session_state_helper import SessionStateHelper
+from ...helpers.session_state_helper import SessionStateHelper
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import streamlit as st
 from pathlib import Path
@@ -15,6 +15,7 @@ class Sidebar:
         if not self.session_state_helper.authenticated:
             st.stop()
         with st.sidebar:
+            st.header("Chat instellingen")
             files = self.initialize_file_uploader()
             if files:
                 with st.container(height=100 + 50 * len(files) if files else 200):
