@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 from typing import Any
 import streamlit as st
@@ -7,6 +8,7 @@ from streamlit_cookies_manager import CookieManager
 
 
 Result = tuple[str, list[dict[str, str]], Any]
+backend_url = os.environ.get("FLASK_URL")
 
 
 class Endpoints:
@@ -14,7 +16,7 @@ class Endpoints:
     def identify(cookie_manager: CookieManager, session_id: str | None = None) -> dict[str, Any] | None:
         try:
             session_id_entry = {"sessionId": session_id} if session_id else {}
-            response = requests.get("http://dora-backend:5000/identify", data={**session_id_entry})
+            response = requests.get(f"{backend_url}/identify", data={**session_id_entry})
             json_response = response.json()
             if json_response["error"] != "":
                 st.error(json_response["error"])
@@ -42,7 +44,7 @@ class Endpoints:
             **session_id_entry,
         }
         try:
-            response = requests.post("http://dora-backend:5000/upload_files", data=form_data, files=files_with_prefix)
+            response = requests.post(f"{backend_url}/upload_files", data=form_data, files=files_with_prefix)
             json_response = response.json()
             if json_response["error"] != "":
                 raise Exception(json_response["error"])
@@ -62,7 +64,7 @@ class Endpoints:
         try:
             session_id_entry = {"sessionId": session_id} if session_id else {}
             response = requests.delete(
-                "http://dora-backend:5000/delete_file",
+                f"{backend_url}/delete_file",
                 data={
                     "filename": file_name,
                     "documentIds": json.dumps(document_ids),
@@ -85,7 +87,7 @@ class Endpoints:
             st.stop()
         try:
             session_id_dict = {"sessionId": session_id} if session_id is not None else {}
-            response = requests.post("http://dora-backend:5000/prompt", data={"prompt": text_prompt, **session_id_dict})
+            response = requests.post(f"{backend_url}/prompt", data={"prompt": text_prompt, **session_id_dict})
             json_response = response.json()
             if json_response["error"] != "":
                 st.error(json_response["error"], icon="❌")
@@ -104,7 +106,7 @@ class Endpoints:
             st.stop()
         try:
             session_id_entry = {"sessionId": session_id} if session_id else {}
-            response = requests.delete("http://dora-backend:5000/clear_chat_history", data={**session_id_entry})
+            response = requests.delete(f"{backend_url}/clear_chat_history", data={**session_id_entry})
             json_response = response.json()
             if json_response["error"] != "":
                 raise Exception(json_response["error"])
