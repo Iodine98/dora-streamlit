@@ -1,4 +1,6 @@
 import base64
+from streamlit_mods.components.miscellaneous import Miscellaneous
+from streamlit_mods.helpers.message_helper import BotMessage
 from streamlit_mods.helpers.session_state_helper import SessionStateHelper
 from streamlit_mods.endpoints import Endpoints, Result
 from streamlit_mods.helpers.file_helper import FileState
@@ -9,13 +11,6 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 from timeit import default_timer
 import time
 
-def format_time_str(time_elapsed: float) -> str:
-    if time_elapsed == 0:
-        return ""
-    elif time_elapsed > 100:
-        return f"{round((time_elapsed)/60)} minuten"
-    else:
-        return f"{round(time_elapsed)} seconden"
 
 def get_file_state_html(file_state: FileState, page_number: int) -> str:
         current_file = file_state["file"]
@@ -29,74 +24,42 @@ def get_file_state_html(file_state: FileState, page_number: int) -> str:
         else:
             file_url = f"data:application/octet-stream;base64,{base64_string}"
             return f'<a href="{file_url}" download="{file_state["name"]}" target="_blank">{file_state["name"]}</a>'
+      
+
 
 
 class ChatScreen:
     def __init__(self, session_state_helper: SessionStateHelper) -> None:
         st.header("Chat met DoRA 🤖")
+        st.warning("Klik NIET op 'Taak Bewerken' totdat je klaar bent met chatten. Zodra je op 'Taak Bewerken' klikt, worden de documenten die je hebt geüpload verwijderd. \
+                   \n Mocht dit onverhoopt toch gebeuren, üpload de bestanden dan opnieuw.")
         self.session_state_helper = session_state_helper
         self.file_helper = session_state_helper.file_helper
         self.message_helper = session_state_helper.message_helper
+        self.display_ai_message = Miscellaneous(session_state_helper).display_ai_message
         self.init_message_content = "Hallo, ik ben DoRA. Wat kan ik voor je doen?"
         if not self.session_state_helper.authenticated:
+            st.error("U bent niet ingelogd.")
             st.stop()
         self.add_initial_message()
         self.init_chat_input()
         self.display_messages()
         self.send_prompt_on_last_message()
-
-    def display_ai_message(self, content: str, citations: list[dict[str, str]], time_elapsed: float, placeholder: DeltaGenerator | None = None) -> None:
-        if placeholder:
-            placeholder.markdown(content)
-        else:
-            st.markdown(content)
-        if citations:
-            self.display_citations(citations)
-        if time_elapsed >= 0:
-            time_str = format_time_str(time_elapsed)
-            st.write(f":orange[Responstijd: {time_str}]")
-
-    def get_file_state_by_name(self, filename: str) -> FileState:
-        [file_state] = [file_state for file_state in self.file_helper.file_states if str(file_state["name"]).replace(" ", "_") == filename]
-        if file_state is None:
-            st.error(f"File state was not found for {filename}")
-            raise ValueError(f"File state was not found for {filename}")
-        return file_state
-
-
-    def display_citations(self, citations: list[dict[str, str]]) -> None:
-        source_name_html_map = {}
-        for i, citation in enumerate(citations):
-            with st.expander(f"Bron {i+1}"):
-                current_file_state = self.get_file_state_by_name(citation["source"])
-                col1, col2 = st.columns([1,7], gap="small")
-                col1.markdown("Bestand:")
-                col2.download_button(
-                    label=f"{current_file_state['name']}",
-                    data=current_file_state["file"],
-                    file_name=current_file_state["name"],
-                    mime="application/octet-stream",
-                    key=f"{citation['source'], i}"
-                )
-                # st.markdown(f'Bestand: {file_state_html}', unsafe_allow_html=True)
-                st.markdown(f'Rangorde: {citation["ranking"]}')
-                if "score" in citation and int(citation["score"]) >= 0.0:
-                    st.markdown(f'Score: {round(float(citation["score"]), 2)}')
-                st.markdown(f'Pagina: {citation["page"]}')
-                st.markdown(f'''Citaat: "*{citation["proof"]}*"''')
         
 
     def display_messages(self):
-        for message in self.message_helper.messages:
+        for i, message in enumerate(self.message_helper.messages):
             if message["role"] == "human":
                 with st.chat_message("human"):
                     st.markdown(message["content"])
             elif message["role"] == "ai":
                 with st.chat_message("ai"):
+                    message = cast(BotMessage, message)
                     self.display_ai_message(
                         content=message["content"],
                         citations=message["citations"],
-                        time_elapsed=message["time"]
+                        time_elapsed=message["time"],
+                        counter=i,
                     )
 
     def equals_init_message(self, message: dict[str, Any]) -> bool:
@@ -143,4 +106,4 @@ class ChatScreen:
         end = default_timer()
         time_elapsed = end - start_time
         self.message_helper.add_bot_message(answer, citations, source_documents, time_elapsed)
-        self.display_ai_message(full_answer, citations, time_elapsed, placeholder)
+        self.display_ai_message(full_answer, citations, time_elapsed, placeholder, len(self.message_helper.messages) - 1)

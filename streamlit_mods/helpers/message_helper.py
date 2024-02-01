@@ -1,6 +1,18 @@
 import streamlit as st
-from typing import Any
+from typing import Any, Literal, TypedDict
 from streamlit_cookies_manager import CookieManager
+
+class Message(TypedDict):
+    role: Literal["human"] | Literal["ai"]
+    content: str
+
+
+class BotMessage(Message):
+    content: str
+    citations: list[dict[str, str]]
+    sources: Any
+    time: float
+    
 
 
 class MessageHelper:
@@ -9,13 +21,13 @@ class MessageHelper:
         st.session_state.messages = self.messages
 
     @property
-    def messages(self) -> list:
+    def messages(self) -> list[Message]:
         if "messages" in st.session_state:
             return st.session_state.messages
         return []
 
     @messages.setter
-    def messages(self, value: list) -> None:
+    def messages(self, value: list[Message]) -> None:
         st.session_state.messages = value
 
     def get_last_message(self) -> dict[str, Any] | None:
@@ -26,13 +38,13 @@ class MessageHelper:
     def add_bot_message(self, content: str, citations: list[dict[str, str]], sources: Any, time: float) -> None:
         self.messages = [
             *self.messages,
-            ({"role": "ai", "content": content, "citations": citations, "sources": sources, "time": time}),
+            BotMessage(role="ai", content=content, citations=citations, sources=sources, time=time),
         ]
 
     def add_user_message(self, content: str) -> None:
         self.messages = [
             *self.messages,
-            ({"role": "human", "content": content}),
+            Message(role="human", content=content),
         ]
 
     @staticmethod
