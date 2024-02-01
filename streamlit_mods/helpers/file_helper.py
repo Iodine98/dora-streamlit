@@ -69,7 +69,7 @@ class FileHelper:
             unique_file_names.add(file.name)
             unique_files.append(file)
         self.filenames = unique_file_names
-        self.file_states: list[FileState] = [
+        self.file_states = [
             {"name": file.name, "file": file, "is_uploaded": self.has_file_been_uploaded(file.name)}
             for file in unique_files
         ]
