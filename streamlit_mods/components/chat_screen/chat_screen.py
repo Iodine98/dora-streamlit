@@ -68,17 +68,22 @@ class ChatScreen:
         source_name_html_map = {}
         for i, citation in enumerate(citations):
             with st.expander(f"Bron {i+1}"):
-                if citation["source"] not in source_name_html_map:
-                    current_file_state = self.get_file_state_by_name(citation["source"])
-                    html_output = get_file_state_html(current_file_state, int(citation["page"]))
-                    source_name_html_map[citation["source"]] = html_output
-                file_state_html = source_name_html_map[citation["source"]]
-                st.markdown(f'Bestand: {file_state_html}', unsafe_allow_html=True)
+                current_file_state = self.get_file_state_by_name(citation["source"])
+                col1, col2 = st.columns([1,7], gap="small")
+                col1.markdown("Bestand:")
+                col2.download_button(
+                    label=f"{current_file_state['name']}",
+                    data=current_file_state["file"],
+                    file_name=current_file_state["name"],
+                    mime="application/octet-stream",
+                    key=f"{citation['source'], i}"
+                )
+                # st.markdown(f'Bestand: {file_state_html}', unsafe_allow_html=True)
                 st.markdown(f'Rangorde: {citation["ranking"]}')
                 if "score" in citation and int(citation["score"]) >= 0.0:
                     st.markdown(f'Score: {round(float(citation["score"]), 2)}')
                 st.markdown(f'Pagina: {citation["page"]}')
-                st.markdown(f'Citaat: "{citation["proof"]}"')
+                st.markdown(f'''Citaat: "*{citation["proof"]}*"''')
         
 
     def display_messages(self):
