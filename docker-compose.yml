@@ -17,7 +17,7 @@ services:
     ports:
       - "8501:8501"
     environment:
-      - FLASK_URL=http://dora-backend:${FLASK_PORT}
+      - FLASK_URL=http://dora-backend:5000
     depends_on:
       - dora-backend
 
