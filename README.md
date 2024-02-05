@@ -13,3 +13,8 @@ Make sure you have Docker Desktop or an equivalent installed with `docker compos
 2. re-build your docker image of `dora-backend`.
 3. run `docker compose up` to start up all services again.
 
+## Deploying `dora-backend` and `dora-streamlit`
+Note to SBP: Make sure to deploy the docker-compose file twice:
+1. Build the image from `dora-streamlit` using the `main` branch which has the basic functionality.
+2. Build the image from `dora-streamlit` using the `research-experiment` branch which allows people to sign in using a UUID token.
+The image tagged as `dora-backend` from [dora-back](https://github.com/Iodine98/dora-back) can remain the same
