@@ -12,11 +12,10 @@ class Sidebar:
         self.init()
 
     def init(self):
-        if not self.session_state_helper.authenticated:
-            st.stop()
         with st.sidebar:
             st.header("Chat instellingen")
             files = self.initialize_file_uploader()
+            self.initialize_file_downloader(files)
 
     def initialize_file_uploader(self) -> list[UploadedFile] | None:
         css = """
@@ -29,6 +28,7 @@ class Sidebar:
             </style>
             """
         st.markdown(css, unsafe_allow_html=True)
+                
         if uploaded_files := st.file_uploader(
             "Upload uw bestanden hier",
             type=["pdf", "docx", "doc", "txt"],

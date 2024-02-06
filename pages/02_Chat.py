@@ -5,7 +5,7 @@ from streamlit_mods.helpers.session_state_helper import SessionStateHelper
 
 def main() -> None:
     session_state_helper = SessionStateHelper()
-    Sidebar(session_state_helper)
     ChatScreen(session_state_helper)
+    Sidebar(session_state_helper)
 
 main()
