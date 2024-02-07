@@ -27,8 +27,8 @@ class MessageHelper:
     def messages(self) -> list[Message]:
         if "messages" in st.session_state:
             return st.session_state.messages
-        if (message_result := Endpoints.get_chat_history(self.cookie_manager, self.session_id)) is not None:
-            return message_result
+        # if (message_result := Endpoints.get_chat_history(self.cookie_manager, self.session_id)) is not None:
+        #     return message_result
         return []
 
     @messages.setter
