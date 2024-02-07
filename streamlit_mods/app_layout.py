@@ -14,6 +14,7 @@ class AppLayout:
         self.message_helper = session_state_helper.message_helper
         self.file_helper = session_state_helper.file_helper
         st.markdown("Welkom bij de DoRA Chatbot. Hier kun je documenten raadplegen en analyseren. Om te beginnen, klik op de knop 'Inloggen' in de sidebar.")
+        self.identify()
         
 
     def identify(self):
@@ -21,7 +22,7 @@ class AppLayout:
             self.session_state_helper.cookie_manager, session_id=self.session_state_helper.session_id
         )
         if json_response is None:
-            return
+            st.stop()
         self.session_state_helper.authenticated = json_response["authenticated"]
         self.session_state_helper.session_id = json_response["sessionId"]
 
