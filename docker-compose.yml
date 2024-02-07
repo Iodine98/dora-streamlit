@@ -1,4 +1,5 @@
 version: '3'
+name: dora-app
 services:
   dora-backend:
     image: dora-backend
@@ -10,7 +11,7 @@ services:
       - MINIMUM_ACCURACY=0.50
       - FETCH_K_DOCUMENTS=100
       - LAMBDA_MULT=0.2
-      - STRATEGY=similarity_score_threshold
+      - STRATEGY=mmr
 
   dora-streamlit:
     image: dora-streamlit
