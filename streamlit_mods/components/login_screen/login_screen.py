@@ -1,5 +1,6 @@
 import re
 import streamlit as st
+from streamlit_mods.endpoints import Endpoints
 
 from streamlit_mods.helpers.session_state_helper import SessionStateHelper
 
@@ -19,8 +20,10 @@ class LoginScreen:
             max_chars=36)
         if is_valid_uuid(uuid_value):
             st.success("UUID is geldig.", icon="✅")
-            session_state_helper.sessionId = uuid_value
-            session_state_helper.authenticated = True
+            result = Endpoints.identify(session_state_helper.cookie_manager, session_id=uuid_value)
+            if result is not None:
+                session_state_helper.sessionId = uuid_value
+                session_state_helper.authenticated = True
         else:
             if uuid_value == "":
                 st.warning("Vul uw UUID hierboven in.")
