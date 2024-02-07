@@ -19,6 +19,7 @@ class Sidebar:
             files = self.initialize_file_uploader()
             self.initialize_file_downloader(files)
             self.display_currently_in_memory()
+            self.display_current_session_id()
 
     def initialize_file_uploader(self) -> list[UploadedFile] | None:
         css = """
