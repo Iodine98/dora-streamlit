@@ -5,8 +5,7 @@ from typing import Any
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit_cookies_manager import CookieManager
-
-from streamlit_mods.helpers.message_helper import BotMessage
+from streamlit_mods.helpers.message_type import BotMessage
 
 
 Result = tuple[str, list[dict[str, str]]]

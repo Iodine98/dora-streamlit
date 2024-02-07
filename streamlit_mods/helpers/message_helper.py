@@ -1,38 +1,47 @@
 import streamlit as st
 from typing import Any, Literal, TypedDict
 from streamlit_cookies_manager import CookieManager
-
+from streamlit_mods.helpers.message_type import Message, BotMessage, Role
 from streamlit_mods.endpoints import Endpoints
 
-class Message(TypedDict):
-    role: Literal["human"] | Literal["ai"]
-    content: str
 
-
-class BotMessage(Message):
-    content: str
-    citations: list[dict[str, str]]
-    time: float
-    
 
 
 class MessageHelper:
     def __init__(self, cookie_manager: CookieManager) -> None:
         self.cookie_manager = cookie_manager
-        self.session_id = st.session_state.sessionId
         st.session_state.messages = self.messages
 
     @property
     def messages(self) -> list[Message]:
         if "messages" in st.session_state:
             return st.session_state.messages
-        # if (message_result := Endpoints.get_chat_history(self.cookie_manager, self.session_id)) is not None:
-        #     return message_result
         return []
 
     @messages.setter
     def messages(self, value: list[Message]) -> None:
         st.session_state.messages = value
+
+    def load_messages_from_backend(self, session_id: str) -> None:
+        if (chat_history := Endpoints.get_chat_history(self.cookie_manager, session_id)) is not None:
+            formatted_messages: list[Message] = []
+            for message in chat_history:
+                role: Role = message["type"]
+                message_data = message["data"]
+                content = message_data["content"]
+                if "additional_kwargs" in message_data and "citations" in message_data["additional_kwargs"]:
+                    citations = message_data["additional_kwargs"]["citations"]["citations"]
+                else:
+                    citations = []
+                if role == "human":
+                    formatted_messages.append(Message(role=message["type"], content=message["data"]["content"]))
+                else:
+                    formatted_messages.append(BotMessage(
+                        role=role,
+                        content=content,
+                        citations=citations,
+                        time=-1))
+            st.session_state.messages = formatted_messages
 
     def get_last_message(self) -> dict[str, Any] | None:
         if len(st.session_state.messages) == 0:
