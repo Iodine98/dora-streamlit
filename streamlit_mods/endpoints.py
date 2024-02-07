@@ -9,7 +9,7 @@ from streamlit_cookies_manager import CookieManager
 from streamlit_mods.helpers.message_helper import BotMessage
 
 
-Result = tuple[str, list[dict[str, str]], Any]
+Result = tuple[str, list[dict[str, str]]]
 backend_url = os.environ.get("FLASK_URL")
 
 
@@ -96,9 +96,8 @@ class Endpoints:
                 return None
             result = json_response["result"]
             citations = result["citations"]["citations"]
-            source_docs = result["source_documents"]
             answer = result["answer"]
-            return answer, citations, source_docs
+            return answer, citations
         except Exception as err:
             st.error(err)
 

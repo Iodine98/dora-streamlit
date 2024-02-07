@@ -12,7 +12,6 @@ class Message(TypedDict):
 class BotMessage(Message):
     content: str
     citations: list[dict[str, str]]
-    sources: Any
     time: float
     
 
@@ -40,10 +39,10 @@ class MessageHelper:
             return None
         return st.session_state.messages[-1]
 
-    def add_bot_message(self, content: str, citations: list[dict[str, str]], sources: Any, time: float) -> None:
+    def add_bot_message(self, content: str, citations: list[dict[str, str]], time: float) -> None:
         self.messages = [
             *self.messages,
-            BotMessage(role="ai", content=content, citations=citations, sources=sources, time=time),
+            BotMessage(role="ai", content=content, citations=citations, time=time),
         ]
 
     def add_user_message(self, content: str) -> None:
