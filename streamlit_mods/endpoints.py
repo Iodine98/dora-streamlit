@@ -125,7 +125,7 @@ class Endpoints:
             st.stop()
         try:
             session_id_entry = {"sessionId": session_id} if session_id else {}
-            response = requests.post(f"{backend_url}/submit_final_answer", data={**session_id_entry})
+            response = requests.post(f"{backend_url}/submit_final_answer", data={**session_id_entry}, json=final_answer)
             json_response = response.json()
             if json_response["error"] != "":
                 raise Exception(json_response["error"])
