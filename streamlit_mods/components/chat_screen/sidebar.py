@@ -65,6 +65,10 @@ class Sidebar:
         for citation in citations:
             st.markdown(f" - `{citation}`")
 
+    def display_current_session_id(self):
+        st.subheader("Huidige sessie ID")
+        st.markdown(f"`{self.session_state_helper.session_id}`")
+
     def on_file_remove(self) -> None:
         new_files: list[UploadedFile] = st.session_state[self.session_state_helper.file_uploader_key]
         new_file_names = set(file.name for file in new_files)

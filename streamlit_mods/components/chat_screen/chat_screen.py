@@ -81,7 +81,7 @@ class ChatScreen:
                 result: Result | None = Endpoints.prompt(
                     self.session_state_helper.cookie_manager,
                     last_message["content"],
-                    self.session_state_helper.sessionId,
+                    self.session_state_helper.session_id,
                 )
                 if result is None:
                     st.error("Er ging iets mis bij het versturen van de vraag.")

@@ -11,7 +11,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 class SessionStateHelper:
     def __init__(self) -> None:
-        st.session_state.sessionId = self.sessionId
+        st.session_state.sessionId = self.session_id
         st.session_state.authenticated = self.authenticated
         st.session_state.initialized = self.initialized
         st.session_state.text_input_available = self.text_input_available
@@ -62,13 +62,13 @@ class SessionStateHelper:
         st.session_state.text_input_available = value
 
     @property
-    def sessionId(self) -> str:
-        if "sessionId" in st.session_state:
+    def session_id(self) -> str:
+        if "session_id" in st.session_state:
             return st.session_state.sessionId
         return ""
 
-    @sessionId.setter
-    def sessionId(self, value: str) -> None:
+    @session_id.setter
+    def session_id(self, value: str) -> None:
         st.session_state.sessionId = value
 
     @property
@@ -82,7 +82,7 @@ class SessionStateHelper:
         st.session_state.authenticated = value
 
     def clear_chat_history(self) -> None:
-        result = Endpoints.clear_chat_history(self.cookie_manager, self.sessionId)
+        result = Endpoints.clear_chat_history(self.cookie_manager, self.session_id)
         if result:
             self.messages = []
             for filename in self.file_helper.filenames:
