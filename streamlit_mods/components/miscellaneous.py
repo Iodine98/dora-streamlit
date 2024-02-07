@@ -22,15 +22,10 @@ class Miscellaneous:
     
 
     def display_ai_message(self, content: str, citations: list[dict[str, str]], time_elapsed: float, placeholder: DeltaGenerator | None = None, counter: int = -1) -> None:
-        def message_selected_on_click() -> None:
-            self.session_state_helper.chosen_answer = cast(BotMessage, self.message_helper.messages[counter])
-            st.toast("U heeft uw antwoord gekozen! Nu kunt u op 'Taak Bewerken' klikken om uw antwoord te bewerken.", icon="✅")
         if placeholder:
             placeholder.markdown(content)
         else:
             st.markdown(content)
-        if counter >= 0:
-            st.button("Kies dit antwoord", key="choose_answer " + str(counter), on_click=message_selected_on_click)
         if citations:
             self.display_citations(citations, counter)
         if time_elapsed >= 0:
