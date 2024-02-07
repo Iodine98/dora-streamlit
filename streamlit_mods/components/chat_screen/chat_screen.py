@@ -7,7 +7,6 @@ from streamlit_mods.helpers.file_helper import FileState
 from typing import Any, cast
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
-from streamlit.runtime.uploaded_file_manager import UploadedFile
 from timeit import default_timer
 import time
 
