@@ -18,7 +18,6 @@ class Sidebar:
             st.header("Chat instellingen")
             files = self.initialize_file_uploader()
             self.initialize_file_downloader(files)
-            self.display_currently_in_memory()
             self.display_current_session_id()
 
     def initialize_file_uploader(self) -> list[UploadedFile] | None:
@@ -59,14 +58,6 @@ class Sidebar:
                 mime="application/octet-stream",
             )
 
-    def display_currently_in_memory(self):
-        bot_messages: list[BotMessage] = [cast(BotMessage, message) for message in self.message_helper.messages if message["role"] == "ai"]
-        citations = set(citation["source"] for message in bot_messages for citation in message["citations"])
-        if not citations:
-            return
-        st.subheader("Bestanden in het geheugen")
-        for citation in citations:
-            st.markdown(f" - `{citation}`")
 
     def display_current_session_id(self):
         st.subheader("Huidige sessie ID")
