@@ -3,7 +3,7 @@ from typing import Any, Literal, TypedDict
 from streamlit_cookies_manager import CookieManager
 
 class Message(TypedDict):
-    role: Literal["human"] | Literal["ai"]
+    role: Literal["human"] | Literal["ai"] | Literal["final"]
     content: str
 
 
