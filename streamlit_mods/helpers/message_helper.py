@@ -2,6 +2,8 @@ import streamlit as st
 from typing import Any, Literal, TypedDict
 from streamlit_cookies_manager import CookieManager
 
+from streamlit_mods.endpoints import Endpoints
+
 class Message(TypedDict):
     role: Literal["human"] | Literal["ai"]
     content: str
@@ -18,12 +20,15 @@ class BotMessage(Message):
 class MessageHelper:
     def __init__(self, cookie_manager: CookieManager) -> None:
         self.cookie_manager = cookie_manager
+        self.session_id = st.session_state.sessionId
         st.session_state.messages = self.messages
 
     @property
     def messages(self) -> list[Message]:
         if "messages" in st.session_state:
             return st.session_state.messages
+        if (message_result := Endpoints.get_chat_history(self.cookie_manager, self.session_id)) is not None:
+            return message_result
         return []
 
     @messages.setter
