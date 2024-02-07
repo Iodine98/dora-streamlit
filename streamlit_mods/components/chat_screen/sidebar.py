@@ -62,6 +62,8 @@ class Sidebar:
     def display_currently_in_memory(self):
         bot_messages: list[BotMessage] = [cast(BotMessage, message) for message in self.message_helper.messages if message["role"] == "ai"]
         citations = set(citation["source"] for message in bot_messages for citation in message["citations"])
+        if not citations:
+            return
         st.subheader("Bestanden in het geheugen")
         for citation in citations:
             st.markdown(f" - `{citation}`")
