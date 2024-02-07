@@ -1,4 +1,5 @@
 version: '3'
+name: dora-app
 services:
   dora-backend:
     image: dora-backend
@@ -9,15 +10,15 @@ services:
       - TOP_K_DOCUMENTS=10
       - MINIMUM_ACCURACY=0.50
       - FETCH_K_DOCUMENTS=100
-      - ENV LAMBDA_MULT=0.2
-      - ENV STRATEGY=similarity_score_threshold
+      - LAMBDA_MULT=0.2
+      - STRATEGY=mmr
 
   dora-streamlit:
     image: dora-streamlit
     ports:
       - "8501:8501"
     environment:
-      - FLASK_URL=http://dora-backend:${FLASK_PORT}
+      - FLASK_URL=http://dora-backend:5000
     depends_on:
       - dora-backend
 

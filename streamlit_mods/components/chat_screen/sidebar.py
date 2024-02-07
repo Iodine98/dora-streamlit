@@ -1,6 +1,8 @@
-from ..helpers.session_state_helper import SessionStateHelper
+from typing import cast
+from ...helpers.session_state_helper import SessionStateHelper
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import streamlit as st
+from streamlit_mods.helpers.message_type import BotMessage
 from pathlib import Path
 
 
@@ -12,18 +14,11 @@ class Sidebar:
         self.init()
 
     def init(self):
-        if not self.session_state_helper.authenticated:
-            st.stop()
         with st.sidebar:
+            st.header("Chat instellingen")
             files = self.initialize_file_uploader()
-            if files:
-                with st.container(height=100 + 50 * len(files) if files else 200):
-                    st.subheader("Download uw bestanden hieronder")
-                    self.initialize_file_downloader(files)
-            st.button(
-                "Wis chatgeschiedenis",
-                on_click=self.session_state_helper.clear_chat_history,
-            )
+            self.initialize_file_downloader(files)
+            self.display_currently_in_memory()
 
     def initialize_file_uploader(self) -> list[UploadedFile] | None:
         css = """
@@ -36,6 +31,7 @@ class Sidebar:
             </style>
             """
         st.markdown(css, unsafe_allow_html=True)
+                
         if uploaded_files := st.file_uploader(
             "Upload uw bestanden hier",
             type=["pdf", "docx", "doc", "txt"],
@@ -61,6 +57,13 @@ class Sidebar:
                 file_name=file_name,
                 mime="application/octet-stream",
             )
+
+    def display_currently_in_memory(self):
+        bot_messages: list[BotMessage] = [cast(BotMessage, message) for message in self.message_helper.messages if message["role"] == "ai"]
+        citations = set(citation["source"] for message in bot_messages for citation in message["citations"])
+        st.subheader("Bestanden in het geheugen")
+        for citation in citations:
+            st.markdown(f" - `{citation}`")
 
     def on_file_remove(self) -> None:
         new_files: list[UploadedFile] = st.session_state[self.session_state_helper.file_uploader_key]

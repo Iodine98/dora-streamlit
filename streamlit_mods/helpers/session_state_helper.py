@@ -5,7 +5,7 @@ import streamlit as st
 from streamlit_cookies_manager import CookieManager
 from streamlit_mods.endpoints import Endpoints
 from streamlit_mods.helpers.file_helper import FileHelper
-from streamlit_mods.helpers.message_helper import MessageHelper
+from streamlit_mods.helpers.message_helper import BotMessage, MessageHelper
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
@@ -16,10 +16,20 @@ class SessionStateHelper:
         st.session_state.initialized = self.initialized
         st.session_state.text_input_available = self.text_input_available
         st.session_state.file_uploader_key = self.file_uploader_key
-        st.session_state.file_uploader_key = self.file_uploader_key
+        st.session_state.chosen_answer = self.chosen_answer
         self.cookie_manager = CookieManager()
         self.message_helper = MessageHelper(self.cookie_manager)
         self.file_helper = FileHelper(self.cookie_manager)
+
+    @property
+    def chosen_answer(self) -> BotMessage | None:
+        if "chosen_answer" in st.session_state:
+            return st.session_state.chosen_answer
+        return None
+    
+    @chosen_answer.setter
+    def chosen_answer(self, value: BotMessage) -> None:
+        st.session_state.chosen_answer = value
 
     @property
     def initialized(self) -> bool:

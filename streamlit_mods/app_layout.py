@@ -1,9 +1,9 @@
-from streamlit_mods.components.sidebar import Sidebar
-from streamlit_mods.components.main_screen import MainScreen
+from streamlit_mods.components.chat_screen.sidebar import Sidebar
+from streamlit_mods.components.chat_screen.chat_screen import ChatScreen
 from .helpers.session_state_helper import SessionStateHelper
-from .endpoints import Endpoints, Result
-from typing import Any
 import streamlit as st
+from .endpoints import Endpoints
+from typing import Any
 
 
 class AppLayout:
@@ -13,6 +13,8 @@ class AppLayout:
         self.session_state_helper = session_state_helper
         self.message_helper = session_state_helper.message_helper
         self.file_helper = session_state_helper.file_helper
+        st.markdown("Welkom bij de DoRA Chatbot. Hier kun je documenten raadplegen en analyseren. Om te beginnen, klik op de knop 'Inloggen' in de sidebar.")
+        
 
     def identify(self):
         json_response: dict[str, Any] | None = Endpoints.identify(
@@ -27,4 +29,4 @@ class AppLayout:
         Sidebar(self.session_state_helper)
 
     def initialize_main(self):
-        MainScreen(self.session_state_helper)
+        ChatScreen(self.session_state_helper)
