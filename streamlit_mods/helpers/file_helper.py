@@ -81,7 +81,7 @@ class FileHelper:
             return
         with st.spinner("Bestanden uploaden..."):
             unuploaded_files = [cast(UploadedFile, file_state["file"]) for file_state in unuploaded_file_states]
-            result = Endpoints.upload_files(self.cookie_manager, unuploaded_files, st.session_state.sessionId)
+            result = Endpoints.upload_files(self.cookie_manager, unuploaded_files, st.session_state.session_id)
             if result:
                 for file_state in unuploaded_file_states:
                     self.update_file_is_uploaded(cast(str, file_state["name"]), True)
@@ -89,7 +89,7 @@ class FileHelper:
 
     def delete_file(self, filename: str) -> None:
         result = Endpoints.delete_file(
-            self.cookie_manager, filename, self.file_id_mapping[filename], st.session_state.sessionId
+            self.cookie_manager, filename, self.file_id_mapping[filename], st.session_state.session_id
         )
         if result:
             self.file_states = [file_state for file_state in self.file_states if file_state["name"] != filename]

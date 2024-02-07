@@ -11,7 +11,7 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 class SessionStateHelper:
     def __init__(self) -> None:
-        st.session_state.sessionId = self.session_id
+        st.session_state.session_id = self.session_id
         st.session_state.authenticated = self.authenticated
         st.session_state.initialized = self.initialized
         st.session_state.text_input_available = self.text_input_available
@@ -64,12 +64,12 @@ class SessionStateHelper:
     @property
     def session_id(self) -> str:
         if "session_id" in st.session_state:
-            return st.session_state.sessionId
+            return st.session_state.session_id
         return ""
 
     @session_id.setter
     def session_id(self, value: str) -> None:
-        st.session_state.sessionId = value
+        st.session_state.session_id = value
 
     @property
     def authenticated(self) -> bool:
