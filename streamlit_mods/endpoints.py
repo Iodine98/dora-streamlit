@@ -135,5 +135,19 @@ class Endpoints:
         except Exception as err:
             st.error(err, icon="❌")
         return False
+    
+    @staticmethod
+    def get_chat_history(cookie_manager: CookieManager, session_id: str | None = None) -> list[dict[str, Any]] | None:
+        if not cookie_manager.ready():
+            st.stop()
+        try:
+            session_id_entry = {"sessionId": session_id} if session_id else {}
+            response = requests.get(f"{backend_url}/get_chat_history", data={**session_id_entry})
+            json_response = response.json()
+            if json_response["error"] != "":
+                raise Exception(json_response["error"])
+            return json_response["result"]
+        except Exception as err:
+            st.error(err, icon="❌")
 
         
