@@ -7,7 +7,6 @@ from streamlit_mods.helpers.file_helper import FileState
 from typing import Any, cast
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
-from streamlit.runtime.uploaded_file_manager import UploadedFile
 from timeit import default_timer
 import time
 
@@ -67,7 +66,7 @@ class ChatScreen:
 
     def add_initial_message(self):
         if not self.session_state_helper.initialized:
-            self.message_helper.add_bot_message(self.init_message_content, [], [], -1)
+            self.message_helper.add_bot_message(self.init_message_content, [], -1)
             self.session_state_helper.initialized = True
 
     def init_chat_input(self):
@@ -90,9 +89,9 @@ class ChatScreen:
                     st.error("Er ging iets mis bij het versturen van de vraag.")
                     return
             with st.spinner("Antwoord aan het formuleren..."):
-                self.prepare_answer(*result, start)
+                self.prepare_answer(*result, start_time=start)
 
-    def prepare_answer(self, answer: str, citations: list[dict[str, str]], source_documents: Any, start_time: float):
+    def prepare_answer(self, answer: str, citations: list[dict[str, str]], start_time: float):
         def build_placeholder() -> tuple[DeltaGenerator, str]:
             placeholder = st.empty()
             full_answer = ""
@@ -105,5 +104,5 @@ class ChatScreen:
         placeholder, full_answer = build_placeholder()
         end = default_timer()
         time_elapsed = end - start_time
-        self.message_helper.add_bot_message(answer, citations, source_documents, time_elapsed)
+        self.message_helper.add_bot_message(content=answer, citations=citations, time=time_elapsed)
         self.display_ai_message(full_answer, citations, time_elapsed, placeholder, len(self.message_helper.messages) - 1)

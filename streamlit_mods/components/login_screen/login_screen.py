@@ -24,6 +24,7 @@ class LoginScreen:
             if result is not None:
                 session_state_helper.sessionId = uuid_value
                 session_state_helper.authenticated = True
+                session_state_helper.message_helper.load_messages_from_backend(session_state_helper.sessionId)
         else:
             if uuid_value == "":
                 st.warning("Vul uw UUID hierboven in.")
