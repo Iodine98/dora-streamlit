@@ -12,6 +12,10 @@ services:
       - FETCH_K_DOCUMENTS=100
       - LAMBDA_MULT=0.2
       - STRATEGY=mmr
+    volumes:
+      - logdir:/app/logs
+      - chat_model_folder_path:/models/chat_models
+      - embedding_model_folder_path:/models/embedding_models
 
   dora-streamlit:
     image: dora-streamlit
@@ -21,5 +25,10 @@ services:
       - FLASK_URL=http://dora-backend:5000
     depends_on:
       - dora-backend
+
+volumes:
+  logdir:
+  chat_model_folder_path:
+  embedding_model_folder_path:
 
  
