@@ -66,6 +66,7 @@ class ChatScreen:
 
     def add_initial_message(self):
         if not self.session_state_helper.initialized:
+            time.sleep(0.1)
             self.message_helper.add_bot_message(self.init_message_content, [], -1)
             self.session_state_helper.initialized = True
 
