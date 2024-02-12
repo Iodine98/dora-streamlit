@@ -5,11 +5,10 @@ from typing import Any
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit_cookies_manager import CookieManager
+from streamlit_mods.helpers.message_type import BotMessage
 
-from streamlit_mods.helpers.message_helper import BotMessage
 
-
-Result = tuple[str, list[dict[str, str]], Any]
+Result = tuple[str, list[dict[str, str]]]
 backend_url = os.environ.get("FLASK_URL")
 
 
@@ -96,9 +95,8 @@ class Endpoints:
                 return None
             result = json_response["result"]
             citations = result["citations"]["citations"]
-            source_docs = result["source_documents"]
             answer = result["answer"]
-            return answer, citations, source_docs
+            return answer, citations
         except Exception as err:
             st.error(err)
 
@@ -125,7 +123,8 @@ class Endpoints:
             st.stop()
         try:
             session_id_entry = {"sessionId": session_id} if session_id else {}
-            response = requests.post(f"{backend_url}/submit_final_answer", data={**session_id_entry}, json=final_answer)
+            final_answer_entry = {"finalAnswer": json.dumps(final_answer)}
+            response = requests.post(f"{backend_url}/submit_final_answer", data={**session_id_entry, **final_answer_entry})
             json_response = response.json()
             if json_response["error"] != "":
                 raise Exception(json_response["error"])
@@ -135,5 +134,19 @@ class Endpoints:
         except Exception as err:
             st.error(err, icon="❌")
         return False
+    
+    @staticmethod
+    def get_chat_history(cookie_manager: CookieManager, session_id: str | None = None) -> list[dict[str, Any]] | None:
+        if not cookie_manager.ready():
+            st.stop()
+        try:
+            session_id_entry = {"sessionId": session_id} if session_id else {}
+            response = requests.get(f"{backend_url}/get_chat_history", data={**session_id_entry})
+            json_response = response.json()
+            if json_response["error"] != "":
+                raise Exception(json_response["error"])
+            return json_response["result"]
+        except Exception as err:
+            st.error(err, icon="❌")
 
         

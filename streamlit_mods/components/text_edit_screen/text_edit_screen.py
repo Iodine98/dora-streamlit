@@ -11,7 +11,7 @@ from streamlit_mods.helpers.session_state_helper import SessionStateHelper
 
 class EditTaskScreen:
     def send_final_answer(self) -> None:
-            result: bool = Endpoints.send_final_answer(cast(BotMessage, self.session_state_helper.chosen_answer), CookieManager(), self.session_state_helper.sessionId)
+            result: bool = Endpoints.send_final_answer(cast(BotMessage, self.session_state_helper.chosen_answer), self.session_state_helper.cookie_manager, self.session_state_helper.sessionId)
             if result:
                 st.success("Antwoord succesvol verstuurd!", icon="✅")
             else:
