@@ -13,7 +13,7 @@ class EditTaskScreen:
     def send_final_answer(self) -> None:
             result: bool = Endpoints.send_final_answer(cast(BotMessage, self.session_state_helper.chosen_answer), self.session_state_helper.cookie_manager, self.session_state_helper.sessionId)
             if result:
-                st.success("Antwoord succesvol verstuurd!", icon="✅")
+                st.success("Antwoord succesvol verstuurd! U kunt nu de applicatie afsluiten.", icon="✅")
             else:
                 st.error("Er ging iets mis bij het versturen van het antwoord.", icon="❌")
 
@@ -32,6 +32,7 @@ class EditTaskScreen:
             citations=self.session_state_helper.chosen_answer["citations"],
             time_elapsed=self.session_state_helper.chosen_answer["time"],
         )
+        self.session_state_helper.chosen_answer["role"] = "final"
         self.session_state_helper.chosen_answer["content"] = txt_area_output
         st.button("Verstuur jouw eind-antwoord", key="send_edited_answer", on_click=self.send_final_answer)
 
