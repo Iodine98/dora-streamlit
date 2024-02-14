@@ -5,17 +5,21 @@ services:
     image: mariadb:latest
     expose:
       - "3306"
-    # volumes:
-    #   - ${MARIADB_HOST_PATH}:${MARIADB_CONTAINER_PATH}
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    #   - ${MARIADB_HOST_PATH}:${MARIADB_CONTAINER_PATH} # Add mapping to store DB files on permanent storage
     environment:
-      MARIADB_ROOT_PASSWORD: root
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_USER: ${MARIADB_USER}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
 
   dora-backend:
-    image: dora-backend
+    image: dora-backend:latest
     expose:
       - "5000"
+      - "5678"
+    ports:
+      - "5678:5678"
     environment:
       FLASK_PORT: 5000
       TOP_K_DOCUMENTS: 10
@@ -25,15 +29,16 @@ services:
       STRATEGY: similarity_score_threshold
       CHAT_HISTORY_CONNECTION_STRING: ${MARIADB_INSTANCE_URL}/chat_history
       FINAL_ANSWER_CONNECTION_STRING: ${MARIADB_INSTANCE_URL}/final_answer
+      FLASK_APP: ./server.py
     volumes:
       - ${LOG_DIR}:/app/logs
       # - chat_model_folder_path:/models/chat_models
       # - embedding_model_folder_path:/models/embedding_models
     depends_on:
       - dora-mariadb
-    
+
   dora-streamlit:
-    image: dora-streamlit
+    image: dora-streamlit:latest
     ports:
       - "8501:8501"
     environment:
