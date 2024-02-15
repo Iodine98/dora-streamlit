@@ -3,7 +3,7 @@ The streamlit app for DoRA
 
 ## Running the app
 Make sure you have Docker Desktop or an equivalent installed with `docker compose` functionality.
-1. clone this project as well as [dora-back](https://github.com/Iodine98/dora-back).
+1. clone this project as well as dora-back (e.g. [research-experiment](https://github.com/Iodine98/dora-streamlit/tree/research-experiment)).
 2. build your Docker image of `dora-back` using the tag of `dora-backend` with the appropriate build arguments where you can provide your settings and api keys.
 3. build your Docker image of `dora-streamlit` using `docker build -t dora-streamlit`.
 4. Make sure to map a folder on your host system to the `logdir` volume to be able to read the logs outside the container environment.
