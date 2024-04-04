@@ -5,21 +5,31 @@ import streamlit as st
 from streamlit_cookies_manager import CookieManager
 from streamlit_mods.endpoints import Endpoints
 from streamlit_mods.helpers.file_helper import FileHelper
-from streamlit_mods.helpers.message_helper import MessageHelper
+from streamlit_mods.helpers.message_helper import BotMessage, MessageHelper
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
 class SessionStateHelper:
     def __init__(self) -> None:
-        st.session_state.sessionId = self.sessionId
+        st.session_state.session_id = self.session_id
         st.session_state.authenticated = self.authenticated
         st.session_state.initialized = self.initialized
         st.session_state.text_input_available = self.text_input_available
         st.session_state.file_uploader_key = self.file_uploader_key
-        st.session_state.file_uploader_key = self.file_uploader_key
+        st.session_state.chosen_answer = self.chosen_answer
         self.cookie_manager = CookieManager()
         self.message_helper = MessageHelper(self.cookie_manager)
         self.file_helper = FileHelper(self.cookie_manager)
+
+    @property
+    def chosen_answer(self) -> BotMessage | None:
+        if "chosen_answer" in st.session_state:
+            return st.session_state.chosen_answer
+        return None
+    
+    @chosen_answer.setter
+    def chosen_answer(self, value: BotMessage) -> None:
+        st.session_state.chosen_answer = value
 
     @property
     def initialized(self) -> bool:
@@ -52,14 +62,14 @@ class SessionStateHelper:
         st.session_state.text_input_available = value
 
     @property
-    def sessionId(self) -> str:
-        if "sessionId" in st.session_state:
-            return st.session_state.sessionId
+    def session_id(self) -> str:
+        if "session_id" in st.session_state:
+            return st.session_state.session_id
         return ""
 
-    @sessionId.setter
-    def sessionId(self, value: str) -> None:
-        st.session_state.sessionId = value
+    @session_id.setter
+    def session_id(self, value: str) -> None:
+        st.session_state.session_id = value
 
     @property
     def authenticated(self) -> bool:
@@ -72,7 +82,7 @@ class SessionStateHelper:
         st.session_state.authenticated = value
 
     def clear_chat_history(self) -> None:
-        result = Endpoints.clear_chat_history(self.cookie_manager, self.sessionId)
+        result = Endpoints.clear_chat_history(self.cookie_manager, self.session_id)
         if result:
             self.messages = []
             for filename in self.file_helper.filenames:
